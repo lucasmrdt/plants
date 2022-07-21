@@ -28,14 +28,14 @@ function App() {
   return (
     <Container>
       <MenuSidebar visible={visibleMenu} onHide={() => setVisibleMenu(false)} />
+      <Float>
+        <Button
+          icon="pi pi-th-large"
+          onClick={() => setVisibleMenu(true)}
+          className="mr-2"
+        />
+      </Float>
       <Sticky>
-        <FloatLeft>
-          <Button
-            icon="pi pi-th-large"
-            onClick={() => setVisibleMenu(true)}
-            className="mr-2"
-          />
-        </FloatLeft>
         <Calendar
           id="range"
           value={dateRange as Date[]}
@@ -70,6 +70,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding-bottom: 40px;
 `;
 
 const Sticky = styled.div`
@@ -94,9 +95,16 @@ const Space = styled.div`
   width: 10px;
 `;
 
-const FloatLeft = styled.div`
-  position: absolute;
+const Float = styled.div`
+  position: fixed;
+  z-index: 2;
   left: 10px;
+  top: 10px;
+
+  @media (max-width: 768px) {
+    top: unset;
+    bottom: 10px;
+  }
 `;
 
 export default App;
