@@ -1,10 +1,11 @@
-import { useEffect, useRef } from "react";
-import { AsyncState } from "react-async-hook";
+import { AsyncState } from "../hooks";
 
 interface Props<T> {
-  asyncStates: AsyncState<T | T[]>[];
-  // TODO: avoid any
-  children: (...data: any) => React.ReactNode;
+  asyncStates: AsyncState<T>[];
+  children: (
+    data: Exclude<T, null>[],
+    asyncStates: AsyncState<T>[]
+  ) => React.ReactElement;
   backgroundLoading?: boolean;
 }
 
@@ -13,24 +14,19 @@ export function StatusProvider<T>({
   children,
   backgroundLoading = false,
 }: Props<T>) {
-  const hasLoaded = useRef(false);
-
-  useEffect(() => {
-    if (!hasLoaded.current && asyncStates.every((s) => s.result)) {
-      hasLoaded.current = true;
-    }
-  }, [asyncStates]);
-
   return (
     <>
       {asyncStates.some((s) => s.error) ? (
         <p>Error :'(</p>
-      ) : asyncStates.some((s) => s.loading) &&
-        (!hasLoaded.current || !backgroundLoading) ? (
+      ) : asyncStates.some((s) => s.loading) ||
+        (!backgroundLoading && asyncStates.some((s) => s.refreshing)) ? (
         <p>loading...</p>
       ) : (
-        asyncStates.every((s) => s.result) &&
-        children(...asyncStates.map((s) => s.result as T))
+        asyncStates.every((s) => s.data) &&
+        children(
+          asyncStates.map((s) => s.data) as Exclude<T, null>[],
+          asyncStates
+        )
       )}
     </>
   );

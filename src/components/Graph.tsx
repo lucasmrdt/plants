@@ -1,7 +1,7 @@
 import _ from "lodash";
 import * as c3 from "c3";
 import * as d3 from "d3";
-import { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import styled from "styled-components";
 import { Data } from "../types";
 import { BREAKPOINT_PHONE_MAX_W } from "../constants";
@@ -34,39 +34,42 @@ interface Props {
   color?: string | string[];
 }
 
-export const Graph = ({
-  data: _data,
-  name: _name,
-  color: _color,
-  title,
-  threshold,
-  maxDisplayedItems = 200,
-  isSameDay = false,
-  type: _type = "spline",
-  min,
-  max,
-  format = (value: number) => value.toFixed(2),
-}: Props) => {
-  const datas = (Array.isArray(_data[0]) ? _data : [_data]) as Data[];
-  const names = (Array.isArray(_name) ? _name : [_name]) as string[];
-  const colors = (Array.isArray(_color) ? _color : [_color]) as string[];
-  const types = (Array.isArray(_type) ? _type : [_type]) as C3Type[];
-  const id = title?.replace(/[^a-zA-Z0-9]/, "") || names.join("-");
+export const Graph = React.memo(
+  ({
+    data: _data,
+    name: _name,
+    color: _color,
+    title,
+    threshold,
+    maxDisplayedItems = 100,
+    isSameDay = false,
+    type: _type = "spline",
+    min,
+    max,
+    format = (value: number) => value.toFixed(2),
+  }: Props) => {
+    const chart = useRef<c3.ChartAPI>();
 
-  maxDisplayedItems = getMaxDisplayedItems(
-    window.innerWidth,
-    maxDisplayedItems
-  );
-  min = min ?? _.min(datas.map((d) => _.min(d.map(({ value }) => value)))) ?? 0;
-  max = max ?? _.max(datas.map((d) => _.max(d.map(({ value }) => value)))) ?? 0;
+    const datas = (Array.isArray(_data[0]) ? _data : [_data]) as Data[];
+    const types = (Array.isArray(_type) ? _type : [_type]) as C3Type[];
+    const colors = (Array.isArray(_color) ? _color : [_color]) as string[];
+    const names = (Array.isArray(_name) ? _name : [_name]) as string[];
+    const id = title?.replace(/[^a-zA-Z0-9]/, "") || names.join("-");
 
-  const clusteredDatas = datas.map((data) =>
-    clusterData(data, maxDisplayedItems)
-  );
+    maxDisplayedItems = getMaxDisplayedItems(
+      window.innerWidth,
+      maxDisplayedItems
+    );
+    min =
+      min ?? _.min(datas.map((d) => _.min(d.map(({ value }) => value)))) ?? 0;
+    max =
+      max ?? _.max(datas.map((d) => _.max(d.map(({ value }) => value)))) ?? 0;
 
-  useEffect(() => {
-    const chart = c3.generate({
-      bindto: `#${id}`,
+    const clusteredDatas = datas.map((data) =>
+      clusterData(data, maxDisplayedItems)
+    );
+
+    const props: c3.ChartConfiguration = {
       title: {
         text: title,
       },
@@ -116,14 +119,22 @@ export const Graph = ({
           lines: threshold ? [{ value: threshold, text: "" }] : [],
         },
       },
-    });
-    return () => {
-      chart.destroy();
     };
-  });
 
-  return <Chart id={id} />;
-};
+    useEffect(() => {
+      chart.current = c3.generate({
+        bindto: `#${id}`,
+        ...props,
+      });
+      return () => {
+        chart.current?.destroy();
+      };
+    });
+
+    return <Chart id={id} />;
+  },
+  (prevProps, nextProps) => _.isEqual(prevProps.data, nextProps.data)
+);
 
 const Chart = styled.div`
   transform: translateX(-15px);

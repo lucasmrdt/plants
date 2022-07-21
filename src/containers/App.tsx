@@ -4,15 +4,16 @@ import { SelectButton } from "primereact/selectbutton";
 import { Button } from "primereact/button";
 import { useMemo, useState } from "react";
 import dayjs from "dayjs";
-import GraphSection from "./containers/GraphSection";
-import { AVAILABLE_IDS } from "./constants";
-import MenuSidebar from "./containers/MenuSidebar";
+import GraphSection from "./GraphSection";
+import { AVAILABLE_IDS } from "../constants";
+import MenuSidebar from "./MenuSidebar";
 
 function App() {
-  const [dateRangeValue, setDateRange] = useState<[Date, Date | undefined]>([
+  const [range, setRange] = useState<[Date, Date | undefined]>([
     dayjs().toDate(),
     undefined,
   ]);
+  const [dateRangeValue, setDataRangeValue] = useState(range);
   const [idsValue, setIds] = useState<string[]>(AVAILABLE_IDS);
   const [visibleMenu, setVisibleMenu] = useState(false);
 
@@ -38,11 +39,12 @@ function App() {
       <Sticky>
         <Calendar
           id="range"
-          value={dateRange as Date[]}
+          value={range as Date[]}
           onChange={(e) =>
             // @ts-ignore
-            setDateRange([e.value[0], e.value[1]])
+            setRange([e.value[0], e.value[1]])
           }
+          onHide={() => setDataRangeValue(range)}
           selectionMode="range"
           readOnlyInput
           showIcon
