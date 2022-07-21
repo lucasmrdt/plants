@@ -4,7 +4,6 @@ import * as d3 from "d3";
 import { useEffect } from "react";
 import styled from "styled-components";
 import { Data } from "../types";
-import { useWindowWidth } from "@react-hook/window-size";
 import { BREAKPOINT_PHONE_MAX_W } from "../constants";
 
 function clusterData(data: Data, nbClusterers: number) {
