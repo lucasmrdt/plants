@@ -35,7 +35,6 @@ export async function fetchMoistureData(
 ) {
   return Promise.all(
     ids.map(async (id) => {
-      console.log(id);
       const response = await fetch(`${API_URL}/${id}/moisture.dat`);
       return parseAndFilterResponse(response, start, end);
     })

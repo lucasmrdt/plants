@@ -48,15 +48,16 @@ export const Graph = ({
   max,
   format = (value: number) => value.toFixed(2),
 }: Props) => {
-  const windowWidth = useWindowWidth();
-
   const datas = (Array.isArray(_data[0]) ? _data : [_data]) as Data[];
   const names = (Array.isArray(_name) ? _name : [_name]) as string[];
   const colors = (Array.isArray(_color) ? _color : [_color]) as string[];
   const types = (Array.isArray(_type) ? _type : [_type]) as C3Type[];
   const id = title?.replace(/[^a-zA-Z0-9]/, "") || names.join("-");
 
-  maxDisplayedItems = getMaxDisplayedItems(windowWidth, maxDisplayedItems);
+  maxDisplayedItems = getMaxDisplayedItems(
+    window.innerWidth,
+    maxDisplayedItems
+  );
   min = min ?? _.min(datas.map((d) => _.min(d.map(({ value }) => value)))) ?? 0;
   max = max ?? _.max(datas.map((d) => _.max(d.map(({ value }) => value)))) ?? 0;
 
