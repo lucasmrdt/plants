@@ -1,43 +1,50 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button, ButtonProps } from "primereact/button";
-import { Status } from "../types";
+import { usePrev } from "@/hooks";
 
 interface Props extends ButtonProps {}
 
 function AsyncButton({ onClick, label, ...props }: Props) {
   const [showResponse, setShowResponse] = useState(false);
-  const [status, setStatus] = useState<Status>("default");
-  const prevStatus = useRef(status);
+  const [hasData, setHasData] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasError, setHasError] = useState(false);
+
+  const state = useMemo(
+    () => ({ hasData, isLoading, hasError }),
+    [hasData, hasError, isLoading]
+  );
+  const prevState = usePrev(state);
 
   async function runAction(fct?: (...args: any[]) => any, ...args: any[]) {
-    setStatus("loading");
+    setIsLoading(true);
     try {
       fct && (await fct(...args));
-      setStatus("success");
+      setHasData(true);
     } catch {
-      setStatus("error");
+      setHasError(true);
     }
+    setIsLoading(false);
   }
 
   useEffect(() => {
-    if (prevStatus.current === "loading" && status !== "loading") {
+    if (prevState?.isLoading && !state.isLoading) {
       setShowResponse(true);
       setTimeout(() => setShowResponse(false), 1000);
     }
-    prevStatus.current = status;
-  }, [status]);
+  }, [prevState?.isLoading, state]);
 
   return (
     <Button
       onClick={() => runAction(onClick)}
-      disabled={status === "loading" || showResponse}
+      disabled={state.isLoading || showResponse}
       label={
-        status === "loading"
+        state.isLoading
           ? "loading..."
           : showResponse
-          ? status === "success"
-            ? "OK!"
-            : "Error!"
+          ? state.hasError
+            ? "Error!"
+            : "Ok!"
           : label
       }
       {...props}

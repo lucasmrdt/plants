@@ -1,10 +1,12 @@
-export function Loader() {
+import { Loading } from "./Loading";
+
+export function LoadingOverlay() {
   return (
     <div
       style={{
         position: "absolute",
         background: "rgba(255, 255, 255, 0.5)",
-        zIndex: 1,
+        zIndex: 0,
         top: 0,
         left: -10,
         right: -10,
@@ -14,7 +16,7 @@ export function Loader() {
         alignItems: "center",
       }}
     >
-      <i className="pi pi-spin pi-spinner" style={{ fontSize: "2em" }}></i>
+      <Loading />
     </div>
   );
 }
